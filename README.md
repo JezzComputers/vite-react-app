@@ -10,7 +10,8 @@ Currently, two official plugins are available:
 # Commands
 
 Install dependencies
-'''bash
+
+bash'''
 pnpm install
 '''
 pnpm run dev
