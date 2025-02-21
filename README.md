@@ -14,4 +14,9 @@ Install dependencies
 ```bash
 pnpm install
 ```
+
+Start
+
+```bash
 pnpm run dev
+```
