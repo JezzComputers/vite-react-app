@@ -11,7 +11,7 @@ Currently, two official plugins are available:
 
 Install dependencies
 
-bash'''
+'''bash
 pnpm install
 '''
 pnpm run dev
