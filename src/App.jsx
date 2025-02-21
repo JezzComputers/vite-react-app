@@ -5,7 +5,7 @@ import './App.css'
 
 export default function App() {
   const [count, setCount] = useState(0)
-
+  
   return (
     <>
       <div>
@@ -28,6 +28,17 @@ export default function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <p>
+        <MyButton />
+      </p>
     </>
+  )
+}
+
+function MyButton() {
+  return (
+    <button>
+      test button
+    </button>
   )
 }
