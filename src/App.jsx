@@ -5,7 +5,11 @@ import './App.css'
 
 export default function App() {
   const [count, setCount] = useState(0)
-  
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
   return (
     <>
       <div>
@@ -18,27 +22,25 @@ export default function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
+        <MyButton count={count} onClick={handleClick} />
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        Num of times button clicked count
       </p>
       <p>
-        <MyButton />
+        <MyButton count={count} onClick={handleClick} />
       </p>
     </>
   )
 }
 
-function MyButton() {
+function MyButton({ count, onClick}) {
   return (
-    <button>
-      test button
+    <button onClick={onClick}>
+      Clicked {count} times
     </button>
-  )
+  );
 }
