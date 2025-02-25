@@ -8,6 +8,8 @@ TODO:
 */
 
 import { useState } from "react";
+import './TicTacToe-style.css'
+
 
 function Square({ value, onSquareClick }) {
     return (
