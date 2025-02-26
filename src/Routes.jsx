@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import App from './pages/App';
-import Dev from './pages/TicTacToe';
+import TicTacToe from './pages/TicTacToe';
 
 const AppRoutes = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/dev" element={<Dev />} />
+        <Route path="/dev" element={<TicTacToe />} />
       </Routes>
     </Router>
   );

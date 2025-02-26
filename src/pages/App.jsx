@@ -11,7 +11,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="App">
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -24,20 +24,20 @@ export default function App() {
       <div>
         <MyButton count={count} onClick={handleClick} />
         <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+          Edit <code>src/pages/App.jsx</code> and save to test HMR
         </p>
       </div>
       <p className='lower_text'>
-        Num of times button clicked count
+        Num of times button clicked: {count}
       </p>
       <p>
         <MyButton count={count} onClick={handleClick} />
       </p>
-    </>
+    </div>
   )
 }
 
-function MyButton({ count, onClick}) {
+function MyButton({ count, onClick }) {
   return (
     <button onClick={onClick}>
       Clicked {count} times
