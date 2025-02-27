@@ -9,7 +9,7 @@ Currently, two official plugins are available:
 
 # Commands
 
-Install dependencies
+Install dependencies (create package.json)
 
 ```bash
 pnpm install
