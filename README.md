@@ -21,7 +21,7 @@ Start
 pnpm run dev
 ```
 
-Manual Docker creation/running
+Manual Docker creation/running (+ remove old containers/images)
 
 ```bash
 docker-compose -f "docker-compose.yml" down && docker-compose -f "docker-compose.yml" build && docker-compose -f "docker-compose.yml" up -d
