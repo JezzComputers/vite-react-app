@@ -1,5 +1,16 @@
-#This is a very simple, sample Image 
-FROM ubuntu 
+# Use an official Ubuntu as a parent image
+FROM ubuntu:latest
 
-RUN apt-get update 
-CMD [“echo”,”Image created”] 
+# Set the working directory
+WORKDIR /app
+
+# Update the package repository and install necessary packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the application files
+COPY . .
+
+# Define the command to run the application
+CMD ["echo", "Image created"]

@@ -7,9 +7,7 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Check out the repo
       uses: actions/checkout@v4
@@ -17,8 +15,8 @@ jobs:
     - name: Login to dockerhub
       uses: docker/login-action@v3
       with:
-       username: ${{ secrets.DOCKERHUB_USERNAME }}
-       password: ${{ secrets.DOCKERHUB_TOKEN }}
+       username: ${{ vars.DOCKERHUB_USERNAME }}
+       password: ${{ vars.DOCKERHUB_TOKEN }}
 
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
@@ -27,18 +25,16 @@ jobs:
        push: true
        tags: jezzcomputers/githubaction:latest
 
-deploy:
+  deploy:
     needs: build
     name: Deploy image on OCI compute instance
     runs-on: ubuntu-latest
-
     steps:
     - name: install ssh keys
-      run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      run: ssh-keyscan -H ssh.jeremysprague.tech > ~/.ssh/known_hosts
     - name: connect and pull
-      run: ssh ubuntu@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose up app -d && exit"
+      run: |
+        sshpass -p "${{ vars.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
+        "cd ${{ vars.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose up app -d && exit"
     - name: cleanup
       run: rm -rf ~/.ssh

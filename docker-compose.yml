@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vite-react-app-serverHost
+    command: ["echo", "Container started"]
+    restart: unless-stopped
