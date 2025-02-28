@@ -2,7 +2,7 @@ name: Build and push Docker image to dockerhub
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "production" ]
     
 jobs:
 
@@ -26,3 +26,19 @@ jobs:
        context:
        push: true
        tags: jezzcomputers/githubaction:latest
+
+deploy:
+    needs: build
+    name: Deploy image on OCI compute instance
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install ssh keys
+      run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+    - name: connect and pull
+      run: ssh ubuntu@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose up app -d && exit"
+    - name: cleanup
+      run: rm -rf ~/.ssh
