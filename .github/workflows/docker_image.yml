@@ -18,6 +18,9 @@ jobs:
        username: ${{ vars.DOCKERHUB_USERNAME }}
        password: ${{ vars.DOCKERHUB_TOKEN }}
 
+    - name: Configure Docker credentials
+      run: echo "${{ vars.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
+
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
       with:
@@ -35,6 +38,6 @@ jobs:
     - name: connect and pull
       run: |
         sshpass -p "${{ vars.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
-        "cd ${{ vars.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose up app -d && exit"
+        "cd ${{ vars.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
     - name: cleanup
       run: rm -rf ~/.ssh

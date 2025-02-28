@@ -1,16 +1,24 @@
-# Use an official Ubuntu as a parent image
-FROM ubuntu:latest
+# Use an official Node.js image based on Debian Bookworm
+FROM node:23-bookworm-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Update the package repository and install necessary packages
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install pnpm
+RUN npm --version
+RUN npm install -g pnpm@latest
 
 # Copy the application files
 COPY . .
 
+# Install dependencies
+RUN pnpm install --force
+
+# Build the Vite React app
+RUN pnpm run build
+
+# Expose the port the app runs on
+EXPOSE 5173
+
 # Define the command to run the application
-CMD ["echo", "Image created"]
+CMD ["pnpm", "run", "preview"]
