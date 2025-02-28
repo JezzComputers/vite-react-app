@@ -24,4 +24,4 @@ RUN pnpm run build
 EXPOSE 5173
 
 # Define the command to run the application
-CMD ["pnpm", "run", "preview"]
+CMD ["sh", "-c", "echo 'Starting Vite preview server...' && pnpm run preview"]
