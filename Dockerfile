@@ -6,7 +6,10 @@ WORKDIR /app
 
 # Install pnpm
 RUN npm --version
+RUN npm install -g npm@latest
+RUN npm --version
 RUN npm install -g pnpm@latest
+RUN pnpm --version
 
 # Copy the application files
 COPY . .
