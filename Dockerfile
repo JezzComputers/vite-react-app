@@ -7,10 +7,8 @@ WORKDIR /app
 # Copy package.json first to leverage Docker cache
 COPY package.json ./
 
-# Generate package-lock.json if it doesn't exist and install dependencies
-RUN if [ ! -f package-lock.json ]; then npm install --package-lock-only; fi
-COPY package-lock.json ./
-RUN npm ci
+# Install dependencies and generate package-lock.json if it doesn't exist
+RUN npm install
 
 # Copy the rest of the application files
 COPY . .
