@@ -1,32 +1,30 @@
-name: Build and push Docker image to dockerhub
+name: Build, Push & Deploy
 
 on:
   push:
     branches: [ "main" ]
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out the repo
+    - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Ensure cache directory exists
-      run: mkdir -p /tmp/.buildx-cache
 
     - name: Cache Docker layers
       uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        key: ${{ runner.os }}-buildx-${{ github.sha }}-${{ github.event.pull_request.number || '' }}
         restore-keys: |
           ${{ runner.os }}-buildx-
+          ${{ runner.os }}-buildx-${{ github.sha }}
 
-    - name: Login to dockerhub
+    - name: Login to DockerHub
       uses: docker/login-action@v3
       with:
-       username: ${{ vars.DOCKERHUB_USERNAME }}
-       password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
@@ -41,27 +39,25 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20.17.0'  # Updated to match required node version
+        node-version: '20.17.0'
 
-    - name: Build and push to dockerhub
+    - name: Build and push
       uses: docker/build-push-action@v5
       with:
-       context: .
-       push: true
-       platforms: linux/amd64,linux/arm64
-       tags: jezzcomputers/vite-react-app:latest
-       cache-from: type=local,src=/tmp/.buildx-cache
-       cache-to: type=local,dest=/tmp/.buildx-cache-new
+        context: .
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: jezzcomputers/vite-react-app:latest
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-    - name: Save Docker cache
+    - name: Save cache
       if: always()
       run: |
-        rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   deploy:
     needs: build
-    name: Deploy to VPS via Tailscale
     runs-on: ubuntu-latest
     steps:
     - name: Connect Tailscale
@@ -71,7 +67,7 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_AUTHKEY_SECRET }}
         tags: tag:ci
 
-    - name: Deploy and Cleanup Docker image on Pi
+    - name: Deploy to Pi
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
@@ -79,7 +75,6 @@ jobs:
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
-        cd ~ && sudo docker pull jezzcomputers/vite-react-app:latest && \
-        if [ $(docker ps -a -q -f name=app) ]; then sudo docker stop app && sudo docker rm app; fi && \
-        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/vite-react-app:latest && \
-        sudo tailscale down && sudo tailscale logout && exit"
+        docker rm -f app && \
+        docker pull jezzcomputers/vite-react-app:latest && \
+        docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/vite-react-app:latest"
