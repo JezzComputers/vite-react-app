@@ -3,6 +3,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Check for npm updates
+RUN npm install -g npm@latest
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install
