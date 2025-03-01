@@ -42,7 +42,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y tailscale
     - name: Join Tailscale network
-      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }}
+      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }} --ssh
     - name: SSH via Tailscale
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
@@ -50,7 +50,7 @@ jobs:
         DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jeremy@${{ vars.TAILSCALE_IP }} \
-        "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && docker stop app && docker rm app && docker pull jezzcomputers/githubaction:latest && docker run -d --name app jezzcomputers/githubaction:latest && exit"
+        "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && docker stop app || true && docker rm app || true && docker pull jezzcomputers/githubaction:latest && docker run -d --name app jezzcomputers/githubaction:latest && exit"
     - name: Cleanup
       run: |
         rm -rf ~/.ssh
