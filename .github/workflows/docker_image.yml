@@ -46,9 +46,11 @@ jobs:
     - name: SSH via Tailscale
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
+        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jeremy@${{ vars.TAILSCALE_IP }} \
-        "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
+        "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && docker stop app && docker rm app && docker pull jezzcomputers/githubaction:latest && docker run -d --name app jezzcomputers/githubaction:latest && exit"
     - name: Cleanup
       run: |
         rm -rf ~/.ssh
