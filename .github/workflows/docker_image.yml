@@ -43,9 +43,14 @@ jobs:
     - name: Do the deploy thing
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
+        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
-        "sudo docker stop app || true && sudo docker rm app || true && sudo docker image prune -af && sudo docker pull jezzcomputers/githubaction:latest && sudo docker run -d --name app jezzcomputers/githubaction:latest && exit"
+        "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
+        sudo docker stop app || true && sudo docker rm app || true && sudo docker image prune -af && \
+        sudo docker pull jezzcomputers/githubaction:latest && \
+        sudo docker run -d --name app jezzcomputers/githubaction:latest && exit"
     - name: Cleanup
       run: |
         rm -rf ~/.ssh
