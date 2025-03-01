@@ -55,7 +55,7 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_AUTHKEY_SECRET }}
         tags: tag:ci
 
-    - name: Deploy Docker image to Pi
+    - name: Deploy and Cleanup Docker image on Pi
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
         DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
@@ -65,13 +65,6 @@ jobs:
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
         sudo docker pull jezzcomputers/githubaction:latest && \
         sudo docker stop app || true && sudo docker rm app || true && \
-        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/githubaction:latest"
-    - name: Cleanup
-      run: |
-        sudo tailscale down
-        sudo tailscale logout
-        unset PI_PASSWORD
-        sshpass -p "${{ secrets.PI_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
-        "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
-    - name: cleanup
-      run: rm -rf ~/.ssh
+        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/githubaction:latest && \
+        cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && \
+        sudo tailscale down && sudo tailscale logout && exit"
