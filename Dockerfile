@@ -1,27 +1,23 @@
-# Use an official Node.js image based on Debian Bookworm
-FROM node:23-bookworm-slim
+# Use a faster base image
+FROM node:16-alpine AS builder
 
-# Set the working directory
 WORKDIR /app
 
-# Install pnpm
-RUN npm --version
-RUN npm install -g npm@latest
-RUN npm --version
-RUN npm install -g pnpm@latest
-RUN pnpm --version
+# Install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Copy the application files
+# Copy the rest of the application code
 COPY . .
 
-# Install dependencies
-RUN pnpm install --force
+# Build the application
+RUN npm run build
 
-# Build the Vite React app
-RUN pnpm run build
+# Use a lightweight image for the final stage
+FROM nginx:alpine
 
-# Expose the port the app runs on
+COPY --from=builder /app/dist /usr/share/nginx/html
+
 EXPOSE 5173
 
-# Define the command to run the application
-CMD ["sh", "-c", "echo 'Starting Vite preview server...' && pnpm run preview"]
+CMD ["nginx", "-g", "daemon off;"]

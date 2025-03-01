@@ -20,11 +20,17 @@ jobs:
     - name: Configure Docker credentials
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: arm64,amd64
+
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
       with:
        context: .
        push: true
+       platforms: linux/amd64,linux/arm64
        tags: jezzcomputers/githubaction:latest
 
   deploy:
@@ -49,7 +55,7 @@ jobs:
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
         sudo docker stop app || true && sudo docker rm app || true && sudo docker image prune -af && \
         sudo docker pull jezzcomputers/githubaction:latest && \
-        sudo docker run -d --restart unless-stopped --name app jezzcomputers/githubaction:latest && exit || true"
+        sudo docker run -d --restart unless-stopped --name app -p 5173:5173 jezzcomputers/githubaction:latest && exit || true"
     - name: Cleanup
       run: |
         sudo tailscale down
