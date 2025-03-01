@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
     
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -21,22 +20,57 @@ jobs:
     - name: Configure Docker credentials
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: arm64,amd64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      with:
+        driver: docker-container
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
       with:
-       context:
+       context: .
        push: true
+       platforms: linux/amd64,linux/arm64
        tags: jezzcomputers/githubaction:latest
 
   deploy:
     needs: build
-    name: Deploy image on OCI compute instance
+    name: Deploy to VPS via Tailscale
     runs-on: ubuntu-latest
     steps:
-    - name: install ssh keys
-      run: ssh-keyscan -H ssh.jeremysprague.tech > ~/.ssh/known_hosts
-    - name: connect and pull
+    - name: Connect Tailscale
+      uses: tailscale/github-action@v2
+      with:
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TAILSCALE_AUTHKEY_SECRET }}
+        tags: tag:ci
+
+    - name: Deploy Docker image to Pi
+      env:
+        PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
+        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
+        sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
+        "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
+        sudo docker pull jezzcomputers/githubaction:latest && \
+        sudo docker stop app || true && sudo docker rm app || true && \
+        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/githubaction:latest"
+    - name: Cleanup
+      run: |
+        sudo tailscale down
+        sudo tailscale logout
+        unset PI_PASSWORD
         sshpass -p "${{ secrets.PI_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
         "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
     - name: cleanup
