@@ -63,8 +63,7 @@ jobs:
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
-        sudo docker pull jezzcomputers/vite-react-app:latest && \
-        sudo docker stop app || true && sudo docker rm app || true && \
+        cd ~ && sudo docker pull jezzcomputers/vite-react-app:latest && \
+        if [ $(docker ps -a -q -f name=app) ]; then sudo docker stop app && sudo docker rm app; fi && \
         sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/vite-react-app:latest && \
-        cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && \
         sudo tailscale down && sudo tailscale logout && exit"
