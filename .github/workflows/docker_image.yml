@@ -42,7 +42,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y tailscale
     - name: Join Tailscale network
-      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }} --ssh
+      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }} --ssh --accept-routes --advertise-routes
     - name: SSH via Tailscale
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
@@ -53,6 +53,6 @@ jobs:
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && docker stop app || true && docker rm app || true && docker pull jezzcomputers/githubaction:latest && docker run -d --name app jezzcomputers/githubaction:latest && exit"
     - name: Cleanup
       run: |
-        rm -rf ~/.ssh
-        tailscale down
-        unset PI_PASSWORD
+        sudo rm -rf ~/.ssh
+        sudo tailscale down
+        sudo unset PI_PASSWORD
