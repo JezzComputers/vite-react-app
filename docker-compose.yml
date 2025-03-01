@@ -5,12 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vite-react-app-serverHost
+    container_name: vite-react-app-server
     ports:
       - "80:80"
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME}
-      - DOCKERHUB_TOKEN=${DOCKERHUB_TOKEN}
-    command: ["sh", "-c", "echo 'Starting Vite preview server...' && npm run preview"]
