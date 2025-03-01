@@ -4,12 +4,13 @@ FROM node:23-alpine
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json if it exists to leverage Docker cache
+# Copy package.json first to leverage Docker cache
 COPY package.json ./
-COPY package-lock.json ./
 
-# Install dependencies
-RUN npm ci || npm install
+# Generate package-lock.json if it doesn't exist and install dependencies
+RUN if [ ! -f package-lock.json ]; then npm install --package-lock-only; fi
+COPY package-lock.json ./
+RUN npm ci
 
 # Copy the rest of the application files
 COPY . .
