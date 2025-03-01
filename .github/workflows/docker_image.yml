@@ -38,7 +38,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20'  # Updated to match required node version
+        node-version: '20.17.0'  # Updated to match required node version
 
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5

@@ -1,10 +1,7 @@
-# Use a faster base image
-FROM node:18-alpine AS builder
+# Use a compatible Node.js version
+FROM node:20.17.0-alpine AS builder
 
 WORKDIR /app
-
-# Check for npm updates
-RUN npm install -g npm@latest
 
 # Install dependencies
 COPY package*.json ./
