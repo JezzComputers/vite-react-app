@@ -12,71 +12,45 @@ jobs:
     - name: Check out the repo
       uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Ensure npm cache directory exists
-      run: mkdir -p ~/.npm
-
-    - name: Cache npm dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
-
     - name: Login to dockerhub
+      uses: docker/login-action@v3
+      with:
+       username: ${{ vars.DOCKERHUB_USERNAME }}
+       password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Configure Docker credentials
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
       with:
-       context: .
-       platforms: linux/amd64,linux/arm64
+       context:
        push: true
        tags: jezzcomputers/githubaction:latest
-       cache-from: type=local,src=/tmp/.buildx-cache
-       cache-to: type=local,dest=/tmp/.buildx-cache
 
   deploy:
     needs: build
-    name: Deploy to VPS via Tailscale
+    name: Deploy image on OCI compute instance
     runs-on: ubuntu-latest
     steps:
-    - name: Connect Tailscale
-      uses: tailscale/github-action@v2
-      with:
-        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-        oauth-secret: ${{ secrets.TAILSCALE_AUTHKEY_SECRET }}
-        tags: tag:ci
-
+    - name: Add Tailscale repository and keyring
+      run: |
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    - name: Install Tailscale
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tailscale
+    - name: Join Tailscale network
+      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }}
     - name: SSH via Tailscale
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
-        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
-        ssh -o "StrictHostKeyChecking=no" jeremy@${{ vars.TAILSCALE_IP }} "
-        echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
-        docker stop app || true && \
-        docker rm app || true && \
-        docker image prune -af && \
-        docker pull jezzcomputers/githubaction:latest && \
-        docker run -d --name app --restart unless-stopped jezzcomputers/githubaction:latest && \
-        exit"
-
+        sshpass -p "$PI_PASSWORD" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jeremy@${{ vars.TAILSCALE_IP }} \
+        "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
     - name: Cleanup
       run: |
-        sudo rm -rf ~/.ssh
-        sudo tailscale down
-        sudo tailscale logout
+        rm -rf ~/.ssh
+        tailscale down
         unset PI_PASSWORD
