@@ -18,7 +18,6 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
-          ${{ runner.os }}-buildx-${{ github.sha }}
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -52,11 +51,11 @@ jobs:
         cache-to: type=local,dest=/tmp/.buildx-cache-new
 
     - name: Clear old buildx cache (if exists)
-      if: always()
+      if: success()
       run: rm -rf /tmp/.buildx-cache
 
     - name: Save cache
-      if: always()
+      if: success()
       run: |
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
@@ -92,5 +91,6 @@ jobs:
 
     - name: Disconnect Tailscale
       run: |
-        sudo tailscale down && sudo tailscale logout && \
-        sudo tailscale ip -4 | xargs -I {} sudo tailscale node remove {}
+        sudo tailscale ip -4 | xargs -I {} tailscale node remove {}
+        sudo tailscale down
+        sudo tailscale logout
