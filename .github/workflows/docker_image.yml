@@ -61,5 +61,6 @@ jobs:
     - name: Cleanup
       run: |
         sudo rm -rf ~/.ssh
-        sudo tailscale down --logout
+        sudo tailscale down
+        sudo tailscale logout
         unset PI_PASSWORD

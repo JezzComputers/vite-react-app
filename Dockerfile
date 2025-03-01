@@ -5,17 +5,17 @@ FROM node:23-bookworm-slim
 WORKDIR /app
 
 # Install pnpm
-RUN npm --version
 RUN npm install -g npm@latest
-RUN npm --version
 RUN npm install -g pnpm@latest
-RUN pnpm --version
 
-# Copy the application files
-COPY . .
+# Copy package.json and pnpm-lock.yaml first to leverage Docker cache
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --force
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the application files
+COPY . .
 
 # Build the Vite React app
 RUN pnpm run build
