@@ -16,10 +16,10 @@ jobs:
       uses: docker/login-action@v3
       with:
        username: ${{ vars.DOCKERHUB_USERNAME }}
-       password: ${{ vars.DOCKERHUB_TOKEN }}
+       password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Configure Docker credentials
-      run: echo "${{ vars.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Build and push to dockerhub
       uses: docker/build-push-action@v5
@@ -33,11 +33,16 @@ jobs:
     name: Deploy image on OCI compute instance
     runs-on: ubuntu-latest
     steps:
-    - name: install ssh keys
-      run: ssh-keyscan -H ssh.jeremysprague.tech > ~/.ssh/known_hosts
-    - name: connect and pull
+    - name: Join Tailscale network
+      run: tailscale up --auth-key=tskey-${{ secrets.TAILSCALE_AUTHKEY }}
+    - name: SSH via Tailscale
+      env:
+        PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
       run: |
-        sshpass -p "${{ vars.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
+        sshpass -p "$PI_PASSWORD" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jeremy@${{ vars.TAILSCALE_IP }} \
         "cd ${{ vars.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
-    - name: cleanup
-      run: rm -rf ~/.ssh
+    - name: Cleanup
+      run: |
+        rm -rf ~/.ssh
+        tailscale down
+        unset PI_PASSWORD
