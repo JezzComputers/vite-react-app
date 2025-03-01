@@ -52,7 +52,6 @@ jobs:
         sudo docker run -d --name app jezzcomputers/githubaction:latest && exit || true"
     - name: Cleanup
       run: |
-        rm -rf ~/.ssh
-        tailscale down
+        sudo tailscale down
         tailscale logout
         unset PI_PASSWORD
