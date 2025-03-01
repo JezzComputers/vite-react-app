@@ -48,7 +48,7 @@ jobs:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null jeremy@${{ vars.TAILSCALE_IP }} \
-        "cd ${{ vars.WORK_DIR }} && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
+        "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
     - name: Cleanup
       run: |
         rm -rf ~/.ssh
