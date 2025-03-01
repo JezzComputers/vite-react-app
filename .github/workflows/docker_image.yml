@@ -42,7 +42,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y tailscale
     - name: Join Tailscale network
-      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }} --ssh --accept-routes --advertise-routes
+      run: sudo tailscale up --auth-key=${{ secrets.TAILSCALE_AUTHKEY }} --ssh --accept-routes
     - name: SSH via Tailscale
       env:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
