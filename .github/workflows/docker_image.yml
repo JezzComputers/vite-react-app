@@ -41,7 +41,7 @@ jobs:
        context: .
        push: true
        platforms: linux/amd64,linux/arm64
-       tags: jezzcomputers/githubaction:latest
+       tags: jezzcomputers/vite-react-app:latest
 
   deploy:
     needs: build
@@ -63,8 +63,8 @@ jobs:
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
-        sudo docker pull jezzcomputers/githubaction:latest && \
+        sudo docker pull jezzcomputers/vite-react-app:latest && \
         sudo docker stop app || true && sudo docker rm app || true && \
-        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/githubaction:latest && \
+        sudo docker run -d --restart unless-stopped --name app -p 80:80 jezzcomputers/vite-react-app:latest && \
         cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && \
         sudo tailscale down && sudo tailscale logout && exit"
