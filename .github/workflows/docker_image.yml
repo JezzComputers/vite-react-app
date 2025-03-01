@@ -31,12 +31,12 @@ jobs:
   deploy:
     needs: build
     name: Deploy image on OCI compute instance
-    runs-on: debian-bookworm
+    runs-on: ubuntu-latest
     steps:
     - name: Add Tailscale repository and keyring
       run: |
-        curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-        curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+        curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
     - name: Install Tailscale
       run: |
         sudo apt-get update
