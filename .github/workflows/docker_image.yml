@@ -71,3 +71,7 @@ jobs:
         sudo tailscale down
         sudo tailscale logout
         unset PI_PASSWORD
+        sshpass -p "${{ secrets.PI_PASSWORD }}" ssh -o StrictHostKeyChecking=no jeremy@ssh.jeremysprague.tech \
+        "cd ~ && sudo docker compose down app && sudo docker compose pull && sudo docker compose build && sudo docker compose up app -d && exit"
+    - name: cleanup
+      run: rm -rf ~/.ssh
