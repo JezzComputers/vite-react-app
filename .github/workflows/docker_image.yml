@@ -51,6 +51,10 @@ jobs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
 
+    - name: Clear old buildx cache (if exists)
+      if: always()
+      run: rm -rf /tmp/.buildx-cache
+
     - name: Save cache
       if: always()
       run: |
