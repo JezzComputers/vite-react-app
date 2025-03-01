@@ -49,7 +49,7 @@ jobs:
         "echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin && \
         sudo docker stop app || true && sudo docker rm app || true && sudo docker image prune -af && \
         sudo docker pull jezzcomputers/githubaction:latest && \
-        sudo docker run -d --name app jezzcomputers/githubaction:latest && exit || true"
+        sudo docker run -d --restart unless-stopped --name app jezzcomputers/githubaction:latest && exit || true"
     - name: Cleanup
       run: |
         sudo tailscale down
