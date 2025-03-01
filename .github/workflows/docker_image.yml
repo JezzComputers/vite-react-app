@@ -45,7 +45,7 @@ jobs:
         PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
       run: |
         sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }} \
-        "cd ~ && sudo docker compose down app && sudo docker system prune -af && sudo docker pull jezzcomputers/githubaction:latest && sudo docker compose up app -d && exit"
+        "sudo docker stop app || true && sudo docker rm app || true && sudo docker image prune -af && sudo docker pull jezzcomputers/githubaction:latest && sudo docker run -d --name app jezzcomputers/githubaction:latest && exit"
     - name: Cleanup
       run: |
         rm -rf ~/.ssh
