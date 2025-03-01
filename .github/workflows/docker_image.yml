@@ -53,5 +53,5 @@ jobs:
     - name: Cleanup
       run: |
         sudo tailscale down
-        tailscale logout
+        sudo tailscale logout
         unset PI_PASSWORD
