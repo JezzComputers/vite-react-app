@@ -85,5 +85,7 @@ jobs:
         docker rm -f app && \
         docker pull jezzcomputers/vite-react-app:latest && \
         docker run -d --restart unless-stopped --name app -p 5173:5173 jezzcomputers/vite-react-app:latest && \
-        docker system prune -f && \
-        sudo tailscale down && sudo tailscale logout && exit"
+        docker system prune -f && exit"
+
+    - name: Disconnect Tailscale
+      run: sudo tailscale down && sudo tailscale logout
