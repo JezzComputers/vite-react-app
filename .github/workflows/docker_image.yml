@@ -71,8 +71,11 @@ jobs:
         oauth-secret: ${{ secrets.TAILSCALE_AUTHKEY_SECRET }}
         tags: tag:ci
 
-    - name: Wait for Tailscale connection
-      run: sleep 10
+    - name: SSH Console
+      env:
+        PI_PASSWORD: ${{ secrets.PI_PASSWORD }}
+      run: |
+        sshpass -p "$PI_PASSWORD" ssh -o "StrictHostKeyChecking no" jeremy@${{ vars.TAILSCALE_IP }}
 
     - name: Deploy to Pi
       env:
@@ -88,4 +91,6 @@ jobs:
         docker system prune -f && exit"
 
     - name: Disconnect Tailscale
-      run: sudo tailscale down && sudo tailscale logout
+      run: |
+        sudo tailscale down && sudo tailscale logout && \
+        sudo tailscale ip -4 | xargs -I {} sudo tailscale node remove {}
