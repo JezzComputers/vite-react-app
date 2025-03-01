@@ -31,7 +31,7 @@ docker --version
 ### Docker-Compose Install
 
 ```bash
-sudo apt install -y libffi-dev libssl-dev python3 python3-pip && sudo apt install docker-compose
+sudo apt install -y docker-compose
 ```
 
 ### Verify Docker-Compose Install
