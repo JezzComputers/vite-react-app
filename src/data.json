@@ -1,7 +1,0 @@
-{
-    "todos" : [
-        { "id": 1, "todo": "Fix the app", "slug": "fix-the-app"},
-        { "id": 2, "todo": "Code better", "slug": "code-better"},
-        { "id": 3, "todo": "Finish homework", "slug": "finish-homework"}
-    ]
-}
